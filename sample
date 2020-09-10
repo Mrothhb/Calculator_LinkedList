@@ -1,0 +1,363 @@
+Script started on Tue Feb  5 13:13:25 2019
+]0;[cs12x]  cs12xcm@ieng6-202.ucsd.edu:/home/linux/ieng6/cs12x/cs12xcm/hw5[?1034h[I have no name!@ieng6-202]:hw5:499$ ./driver1
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  i
+
+Please enter a number to insert into list:  1
+Specify 2 for SORTED, 1 for FRONT, 0 for END
+Please enter choice:  2
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  i
+
+Please enter a number to insert into list:  5
+Specify 2 for SORTED, 1 for FRONT, 0 for END
+Please enter choice:  2
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  i
+
+Please enter a number to insert into list:  6
+Specify 2 for SORTED, 1 for FRONT, 0 for END
+Please enter choice:  2
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  v
+Specify 1 for FRONT, 0 for END
+Please enter choice:  1
+
+Number viewed from list is:  MyRec has value of:  1
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  w
+
+The Stack contains:
+List 0 has 3 items in it.
+
+element 1:  MyRec has value of:  5
+element 2:  MyRec has value of:  6
+element 3:  MyRec has value of:  1
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  p
+
+Number popped from the stack is:  MyRec has value of:  1
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  p
+
+Number popped from the stack is:  MyRec has value of:  6
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  p
+
+Number popped from the stack is:  MyRec has value of:  5
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  w
+
+The Stack contains:
+List 0 has 0 items in it.
+
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  v
+Specify 1 for FRONT, 0 for END
+Please enter choice:  1
+Viewing an empty list!!!
+
+WARNING:  view FAILED
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  u
+
+Please enter a number to push to stack:  2
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  u
+
+Please enter a number to push to stack:  3
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  u
+
+Please enter a number to push to stack:  3
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  w
+
+The Stack contains:
+List 0 has 3 items in it.
+
+element 1:  MyRec has value of:  2
+element 2:  MyRec has value of:  3
+element 3:  MyRec has value of:  3
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  r
+Specify 1 for FRONT, 0 for END
+Please enter choice:  1
+
+Number removed from list is:  MyRec has value of:  2
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  r
+Specify 1 for FRONT, 0 for END
+Please enter choice:  0
+
+Number removed from list is:  MyRec has value of:  3
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  p
+
+Number popped from the stack is:  MyRec has value of:  3
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  w
+
+The Stack contains:
+List 0 has 0 items in it.
+
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  e
+
+Stack is empty.
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite reverse,
+
+Please enter a command:  
+[I have no name!@ieng6-202]:hw5:500$ ./driver2
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  u
+
+Please enter a number to push to stack:  11
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  u
+
+Please enter a number to push to stack:  22
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  u
+
+Please enter a number to push to stack:  33
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  w
+
+The Stack contains:
+List 0 has 3 items in it.
+
+element 1:  MyRec has value of:  11
+element 2:  MyRec has value of:  22
+element 3:  MyRec has value of:  33
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  W
+
+The Stack contains (in reverse):
+List 0 has 3 items in it.
+
+element 1: MyRec has value of:  33
+element 2: MyRec has value of:  22
+element 3: MyRec has value of:  11
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  p
+
+Number popped from the stack is:  MyRec has value of:  33
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  p
+
+Number popped from the stack is:  MyRec has value of:  22
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  p
+
+Number popped from the stack is:  MyRec has value of:  11
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  r
+Specify 1 for FRONT, 0 for END
+Please enter choice:  1
+Remove from empty list!!!
+
+WARNING:  remove FAILED
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  w
+
+The Stack contains:
+List 0 has 0 items in it.
+
+
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  e
+
+Stack is empty.
+The commands are:
+    is(e)mpty, (i)nsert, (p)op, 
+    (a)dvance pre, advance (n)ext, 
+    (r)emove, (t)op, p(u)sh, 
+    (v)iew, (w)rite, (W)rite_reverse,
+
+Please enter a command:  
+[I have no name!@ieng6-202]:hw5:501$ exi   exit
+exit
+
+Script done on Tue Feb  5 13:15:01 2019

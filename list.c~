@@ -1,0 +1,806 @@
+/****************************************************************************
+Matthew Roth, A15685519
+CSE 12, Winter 2019
+February, 2019
+cs12xcm
+Assignment Five
+
+File Name:      list.c
+Description:	The List program is a circular linked list, using Nodes to 
+hold data in a sequence. The stack will be the backend framework for utilizing
+the linked list. Nodes can be inserted, removed, and shifted forward 
+or backwards in the list. The list will always maintain a current occupancy
+count, and when the list becomes empty (containing zero nodes) the occupancy
+will also be zero. The data held within a Node can also be displayed to the
+standard output, as a write-out of all the current items in sequence or 
+reverse order, and also an individual data item can be viewed. When the list
+is called to be deleted, all Nodes in memory will be deleted manually before,
+and then the list itself will be deallocated and freed from memory. 
+****************************************************************************/
+/* DEBUGGER QUESTIONS:
+ *
+ * 1. (Node *) 0x605070
+ * 2. (void *) 0x605050 
+ * 3.(struct Node *) 0x605070
+ * 4. (struct Node *) 0x6050b0 
+ * 5. (void *) 0x605090
+ * 6. (struct Node *) 0x6050f0
+ * 7. (struct Node *) 0x605070
+ * 8. 0x605050
+ * 9. 0x6050f0
+ * 10. 0x605070
+ *
+ * */
+#include <malloc.h>
+#include <stdio.h>
+#include "mylib.h"
+#include "list.h"
+
+//=========================================================================
+// struct Node
+//
+// Description: Implements the node of the Link list data structure.
+//     Each node contains a next node and a previous node. The next 
+//     node will be the next node in the circular linked list, and 
+//     the previous node will point to the previous node in the list.
+//     The list is circular, and if the first node is the only node
+//     in the list, then the first node will point its next and 
+//     previous nodes to itself.
+//     
+// Data Fields:
+//     Node (pre *)  - previous node in list
+//     Node (next *)  - nsext node in list
+//     void (data *) - data of node 
+//
+// Public functions:	None.
+//==========================================================================
+typedef struct Node {
+	struct Node * pre;      /* how to access the prior Node */
+	struct Node * next;     /* how to access the next Node */
+	void * data;            /* the data to store */
+} Node;
+
+//=========================================================================
+// struct List
+//
+// Description: The List is a circular linked list that will contain 
+// a front node, with two children previous and next nodes that point to
+// the respective previous and next nodes in the list. If the front node
+// is the only node in the list, it will point to itself. The List will 
+// maintain an occupancy count of all the nodes currrently working in the
+// list. 
+//
+// Data Fields:
+//     Node (front *)  - The front node 
+//     long list_count  - the amount lists active allocated 
+//     long occupancy -  the amount of nodes active in the list 
+//
+// Public functions:	
+//		*copy_func - the copy node function
+//		*delete_func - deletes the current nodes 
+//		*is_greater_than_func - checks the element parameter against the
+//								current front node 
+//		*write_func - writes the node data to the console 
+//==========================================================================
+typedef struct List {
+	Node * front;             /* the front of the list */
+	long list_count;        /* which list is it */
+	long occupancy;
+	void *(*copy_func) (void *);
+	void (*delete_func) (void *);
+	long (*is_greater_than_func) (void *, void *);
+	FILE *(*write_func) (void *, FILE *);
+} List;
+
+/* private Node function declarations */
+static void delete_Node (Node **, void (*delete_func) (void *));
+static Node * insert_Node (Node *, void *, void *(*copy_func) (void *)); 
+static int locate (List * this_list, void * element);
+static Node * new_Node (void *, void *(*copy_func) (void *));
+static void * remove_Node (Node *);
+static void * view_Node (Node *); 
+static FILE * write_Node (Node *, FILE *, FILE *(*write_func) (void *, FILE *));
+
+/* catastrophic error messages */
+static const char ADNEXT_NONEXIST[] = 
+"Advance next from non-existent list!!!\n";
+static const char ADNEXT_EMPTY[] = 
+"Advance next from empty list!!!\n";
+static const char ADPRE_NONEXIST[] = 
+"Advance pre from non-existent list!!!\n";
+static const char ADPRE_EMPTY[] = 
+"Advance pre from empty list!!!\n";
+static const char DELETE_NONEXIST[] =
+"Deleting from non-existent list!!!\n";
+static const char DELETE_NONEXISTNODE[] =
+"Deleting a non-existent node!!!\n";
+static const char ISEMPTY_NONEXIST[] =
+"Is empty check from non-existent list!!!\n";
+static const char INSERT_NONEXIST[] =
+"Inserting to a non-existent list!!!\n";
+static const char REMOVE_NONEXIST[] =
+"Removing from non-existent list!!!\n";
+static const char REMOVE_EMPTY[] =
+"Remove from empty list!!!\n";
+static const char VIEW_NONEXIST[] = 
+"Viewing a non-existent list!!!\n";
+static const char VIEW_NONEXISTNODE[] = 
+"Viewing a non-existent node!!!\n";
+static const char VIEW_EMPTY[] =
+"Viewing an empty list!!!\n";
+static const char WRITE_NONEXISTFILE[] =
+"Writing to a non-existent file!!!\n";
+static const char WRITE_NONEXISTLIST[] =
+"Writing from a non-existent list!!!\n";
+static const char WRITE_MISSINGFUNC[] =
+"Don't know how to write out elements!!!\n";
+static const char WRITE_NONEXISTNODE[] =
+"Writing from a non-existent node!!!\n";
+
+/* debug messages */
+static const char ADNEXT[] = "[List %ld - Advancing next]\n";
+static const char ADPRE[] = "[List %ld - Advancing pre]\n";
+static const char INSERT[] = "[List %ld - Inserting node]\n";
+static const char REMOVE[] = "[List %ld - Removing node]\n";
+static const char VIEW[] = "[List %ld - Viewing node]\n";
+static const char LIST_ALLOCATE[] = "[List %ld has been allocated]\n";
+static const char LIST_DEALLOCATE[] = "[List %ld has been deallocated]\n";
+
+static int debug_on = FALSE;    /* allocation of debug flag */
+static long list_counter = 0;   /* the number of lists allocated so far */
+
+/*---------------------------------------------------------------------------
+Function Name:                set_debug_on
+Purpose:                      This function will turn on the debug option 
+Description:                  The debug int value will be set to 1, or TRUE
+Input:                        void.
+Output:                       None.
+Result:                       debug turned on.
+Side Effects:                 None.
+---------------------------------------------------------------------------*/
+void set_debug_on (void) {
+
+	/*turn on debug*/
+	debug_on = TRUE;
+
+}
+
+/*---------------------------------------------------------------------------
+Function Name:                set_debug_off
+Purpose:                      This function will turn off the debug option 
+Description:                  The debug int value will be set to 0, or FALSE
+Input:                        void.
+Output:                       None.
+Result:                       debug turned off.
+Side Effects:                 None.
+---------------------------------------------------------------------------*/
+void set_debug_off (void) {
+
+	/*turn off the debug*/
+	debug_on = FALSE;
+}
+
+/*---------------------------------------------------------------------------
+Function Name:                advance_next_List
+Purpose:                      This function will increment the front pointer
+Description:                  set the front pointer Node equal to the front 
+pointers next node 
+Input:                        this_list: the list 
+Output:                       None.
+Result:                       the front pointer node is now incremented forward.
+Side Effects:                 None.
+---------------------------------------------------------------------------*/
+void advance_next_List (List * this_list) {
+
+	/*error statement if NULL list*/
+	if(this_list == NULL){
+		fprintf(stderr, ADNEXT_EMPTY);
+
+		return;
+	}
+
+	/*set the front node to the previous front node next node*/
+	this_list->front = this_list->front->next;
+
+	if(debug_on){
+
+		fprintf(stderr, ADNEXT, list_counter);
+	}
+}
+/*---------------------------------------------------------------------------
+Function Name:                advance_pre_List
+Purpose:                      This function will decrement the front of the 
+list by one 
+Description:                  set the front pointer node equal to the front 
+pointer nodes previous node 
+Input:                        this_list: the list 
+Output:                       None.
+Result:                       the front node is now the previous node 
+Side Effects:                 None.
+---------------------------------------------------------------------------*/
+void advance_pre_List (List * this_list) {
+
+	/*if the list is NULL error message*/
+	if(this_list == NULL){
+
+		fprintf(stderr, ADPRE_EMPTY);
+
+		return;
+	}
+
+	/*set the front node to the previous front nodes previous node*/
+	this_list->front = this_list->front->pre;    
+
+	if(debug_on){
+		fprintf(stderr, ADPRE, list_counter);
+	}
+
+}
+
+/*---------------------------------------------------------------------------
+Function Name:                delete_List 
+Purpose:                      The list will be deleted and all memeory will be 
+deallocated  
+Description:                  a while loop will manually delete all the nodes
+remaining in the list, and then the memory for the list itself will be freed
+Input:                        lpp: the list pointer to pointer 
+Output:                       None.
+Result:                       List and all its nodes are deleted and deallocated
+Side Effects:                 None.
+---------------------------------------------------------------------------*/
+void delete_List (List ** lpp) {
+
+	/*a temporary placeholder node */
+	Node * working = (*lpp)->front;
+
+	if(lpp == NULL || *lpp == NULL){
+
+		fprintf(stderr, "The list does not exist");
+		return;
+	}
+	if(debug_on){
+
+		fprintf(stderr, LIST_DEALLOCATE,list_counter);
+	}
+
+	/*loop and manually delete all the nodes in the list*/ 
+	while((*lpp)->occupancy-- > 1){
+
+		delete_Node(&working->pre, (*lpp)->delete_func);
+		if((*lpp)->occupancy > 0){
+			working = working->next;
+		}
+
+	}
+	/*delete the final node*/
+	delete_Node(&working, (*lpp)->delete_func);
+
+	/*free the list memory*/
+	free(*lpp);
+
+	/*set the pointer to zero*/
+	*lpp = NULL;
+
+}
+/*---------------------------------------------------------------------------
+Function Name:                insert 
+Purpose:                      the insert function will insert a new node into
+the list and place an item inside of the node as a data holder 
+Description:                  determine where in the list the user would like
+to insert the next new node - front, end or sorted insertion. Call the 
+insert_Node function Then increment the occupancy of the list. 
+Input:                        this_List: the list element: the item to store 
+where: to location in the list to store the item 
+Output:                       return the success or failure 
+Result:                       the new node is creates and inserted into the list
+---------------------------------------------------------------------------*/
+long insert (List * this_list, void * element, long where) {
+
+	/*create new temporary placeholder nodes*/
+	Node * tempFront;
+	Node * newNode;
+
+	/*the return value of locate*/
+	int status;
+
+	/*copy the front node*/
+	tempFront = this_list->front;
+
+
+	if(this_list == NULL){
+
+		fprintf(stderr, INSERT_NONEXIST);
+		return NULL;
+	}
+
+	if(!element){
+		fprintf(stderr,"The element doesn't exist!");
+		return NULL;
+	}
+
+	/*insert to the list in sorted list*/
+	if(where == SORTED){
+
+		status = locate(this_list, element);
+	}
+
+	/*SINGLE CALL TO INSERT NODE MADE*/
+	newNode = insert_Node(this_list->front, element, this_list->copy_func);
+
+	if(!this_list->occupancy){
+
+		this_list->front = newNode;
+	}
+
+
+	/*if the location is the front*/
+	if(where == FRONT){
+
+		this_list->front = newNode;
+
+	}
+	/*if the location is the end*/
+	else if(where == END){
+
+		this_list->front = newNode->next;
+	}
+
+	/*if the list front node is null*/
+	if(!status && where == SORTED){
+		this_list->front = newNode;
+
+	}
+
+	/*else set the front node back to the temp position*/
+	else if(status && where == SORTED){
+
+		this_list->front = tempFront;
+	}
+
+	/*increment the occupancy of the list*/
+	this_list->occupancy++;
+
+	if(debug_on){
+		fprintf(stderr, INSERT, list_counter);
+	}
+
+	return TRUE;
+
+}
+
+/*---------------------------------------------------------------------------
+Function Name:                locate
+Purpose:                      the locate function will find the location in 
+the list of nodes where the next new node will be inserted. 
+Description:                  in a while loop check the element size against 
+the size of the node data item in the list and call the advance function to 
+shift the front node until the largest element is found, and the insert the 
+new node behind the largest element (if the element is larges than the param)
+if the element itself is the largest element then place the element at the 
+end of the list. 
+Input:                        this_List: the list element: the item to be insert
+Output:                       the success or failure TRUE FALSE
+Result:                       the insertion point has been locted       
+---------------------------------------------------------------------------*/
+static int locate (List * this_list, void * element) {
+
+	/*prevent an infinte loop*/
+	int index = this_list->occupancy;
+
+	/*boolean type statement if the front node has been changed*/
+	int	changeFront = 0; 
+
+	/*check if its the first Node*/	
+	if(this_list->occupancy == NULL){
+
+		return FALSE;
+	}
+
+	/*continue to call ad_nex until largest value is reached*/ 
+	while((this_list->is_greater_than_func)(element, this_list->front->data)){
+
+		/*if the index is less than one, insert at end of list*/
+		if(index < FRONT){
+
+			return TRUE;
+		}
+
+		advance_next_List(this_list);
+
+		/*the front node has been changed at least once*/
+		changeFront = TRUE;
+
+		--index;
+	}
+
+	return changeFront;
+
+}
+
+/*---------------------------------------------------------------------------
+Function Name:                isempty_List 
+Purpose:                      to check if the list has nodes inserted or if 
+the list is empty 
+Description:                  check the occupancy variable if the value is 
+zero then return TRUE else return FALSE 
+Input:                        this_list: the list 
+Output:                       TRUE FALSE 
+Result:                       the list is empty or not 
+---------------------------------------------------------------------------*/
+long isempty_List (List * this_list) {
+
+	if(this_list == NULL){
+		fprintf(stderr, ISEMPTY_NONEXIST);
+		return TRUE;
+	}
+	/*if the occupancy is zero, return an empty list statement*/
+	if(this_list->occupancy == NULL){
+		return TRUE;
+	}
+
+	return FALSE;
+}
+/*---------------------------------------------------------------------------
+Function Name:                new_List 
+Purpose:                      the constructor to create a new list object and
+to initialize the data variables 
+Description:                  Allocate memory to the List, initialize all the 
+data fields return the list 
+Input:                        copy_func: the copy function delete_func: the 
+delete function is_greater_than_func: the function to test for equality 
+write_func: the function to write nodes data to the standard output 
+Output:                       the_list 
+Result:                       a new is is created in memory
+---------------------------------------------------------------------------*/
+List * new_List (
+		void *(*copy_func) (void *),
+		void (*delete_func) (void *),
+		long (*is_greater_than_func) (void *, void *),
+		FILE *(*write_func) (void *, FILE *)) {
+
+	/*allocate*/
+	List * this_List = (List*)malloc(sizeof(List));
+
+	/*initialize data fields for the List*/
+	this_List -> front = NULL;
+	this_List -> occupancy = 0;
+	++list_counter; 
+	this_List -> copy_func = copy_func;
+	this_List -> delete_func = delete_func;
+	this_List -> is_greater_than_func = is_greater_than_func;
+	this_List -> write_func = write_func;
+
+	if(debug_on){
+		fprintf(stderr, LIST_ALLOCATE, list_counter);
+	}
+
+
+	return this_List;
+}
+/*---------------------------------------------------------------------------
+Function Name:                remove_List
+Purpose:                      a node will be removed from the list 
+Description:                  determine if the front or end node is to be 
+removed and make ONE call to remove Node to remove the node 
+Input:                        this_list: the list where: front or end list 
+Output:                       None.
+Result:                       the node is removed 
+---------------------------------------------------------------------------*/
+void * remove_List (List * this_list, long where) {
+
+	Node * temp;
+
+	if(debug_on){
+		fprintf(stderr, REMOVE, list_counter);
+	}
+	/*check for a nonexistent list*/
+	if(this_list == NULL){
+		fprintf(stderr,REMOVE_NONEXIST);
+		return NULL;
+	}
+
+	/*check if the front is NULL*/
+	if(this_list->front == NULL){
+		fprintf(stderr, REMOVE_NONEXIST);
+		return NULL;
+	}
+
+	/*if the list is empty return NULL*/
+	if(this_list->occupancy < FRONT){
+		fprintf(stderr, REMOVE_EMPTY);
+		return NULL;
+	}
+
+	/*remove the first node in the list*/
+	else if(where == FRONT){
+		advance_next_List(this_list);
+	}
+
+	/*make sure occupancy is one less*/
+	--this_list->occupancy;
+
+	temp = remove_Node(this_list->front->pre);	
+
+	if(this_list->occupancy == 0){
+		this_list->front = NULL;
+	}
+
+	/*ONE CALL TO REMOVE_NODE IS MADE*/
+	return temp;	
+}
+/*---------------------------------------------------------------------------
+Function Name:                view 
+Purpose:                      view the node and the nodes data item 
+Description:                  adavance the nodes in the list until the 
+desired node is found and display the node information to the stdout 
+Input:                        this_list: the list where: front or end list
+Output:                       return the node 
+Result:                       the item is displayed to stdout
+---------------------------------------------------------------------------*/
+void * view (List * this_list, long where) {
+
+	if(debug_on){
+
+		fprintf(stderr, VIEW, list_counter);
+	}
+
+	/*check for non-existent list*/
+	if(this_list == NULL){
+
+		fprintf(stderr, VIEW_NONEXIST);
+		return NULL;
+
+	}
+	/*if the list is empty =*/
+	if(this_list->occupancy < FRONT){
+		fprintf(stderr, VIEW_EMPTY);
+		return NULL;
+	}
+
+	/*view the first node in the list*/
+	if(where == FRONT){
+		advance_next_List(this_list);
+	}
+
+	return view_Node(this_list->front->pre);	
+}
+
+/*provided function*/
+FILE * write_List (List * this_list, FILE * stream) {
+
+	long count;             /* to know how many elements to print */
+	Node * working;                 /* working node */
+
+	if (!stream) {
+		fprintf (stderr, WRITE_NONEXISTFILE);
+		return NULL;
+	}
+
+	if (!this_list) {
+		fprintf (stderr, WRITE_NONEXISTLIST);
+		return NULL;
+	}
+
+	if (stream == stderr)
+		fprintf (stream, "List %ld has %ld items in it.\n",
+				this_list->list_count, this_list->occupancy);
+
+	if (!this_list->write_func) {
+		fprintf (stream, WRITE_MISSINGFUNC);
+		return stream;
+	}
+
+	if (this_list->occupancy >= 1)
+		working = this_list->front;
+
+	for (count = 1; count <= this_list->occupancy; count++) {
+		if (stream == stderr)
+			fprintf (stream, "\nelement %ld:  ", count);
+		write_Node (working, stream, this_list->write_func);
+		working = working->next;
+	}
+
+	return stream;
+}
+/*---------------------------------------------------------------------------
+Function Name:                write_reverse_List 
+Purpose:                      the list elements will be displayed to the stdout
+in reverse order 
+Description:                  print the elements in reverse order using a loop
+and the occupancy variable 
+Input:                        this_list: the list steam: the file stream 
+Output:                       return the file stream 
+Result:                       the elements in the list are displayed to stdout
+in reverse 
+---------------------------------------------------------------------------*/
+FILE * write_reverse_List (List * this_list, FILE * stream) {
+
+	long count;		/*how many elements to print*/
+	Node * working;	/*the current node*/
+
+	if(debug_on){
+		fprintf(stderr, "Writing List %ld in reverse", list_counter);
+	}
+
+	if (!stream) {
+		fprintf (stderr, WRITE_NONEXISTFILE);
+		return NULL;
+	}
+
+	if (!this_list) {
+		fprintf (stderr, WRITE_NONEXISTLIST);
+		return NULL;
+	}
+	/*print the output to the file stream*/
+	if (stream == stderr)
+		fprintf (stream, "List %ld has %ld items in it.\n",
+				this_list->list_count, this_list->occupancy);
+	/*if the write func is missing*/
+	if (!this_list->write_func) {
+		fprintf (stream, WRITE_MISSINGFUNC);
+		return stream;
+	}
+
+	if(this_list->occupancy >= FRONT)
+		working = this_list->front->pre;
+
+	/*print the elements in the node in reverse order*/
+	for(count = FRONT; count <= this_list->occupancy; count++){
+		if(stream == stderr)
+			fprintf(stream, "\nelement %ld: ", count);
+		write_Node (working, stream, this_list->write_func);
+		working = working->pre;
+	}
+
+	return stream;
+}
+
+/*provided function*/
+static void delete_Node (Node ** npp, void (*delete_func) (void *)) {
+
+	/* does the node exist??? */
+	if (!npp || !*npp) {
+		fprintf (stderr, DELETE_NONEXISTNODE);
+		return;
+	}
+
+	/* call function to delete element */
+	if (delete_func && (*npp)->data)
+		(*delete_func) (&((*npp)->data));
+
+	/* delete element */
+	free (*npp);
+
+	/* assign node to NULL */
+	*npp = NULL;
+}
+
+/*---------------------------------------------------------------------------
+Function Name:                insert_Node
+Purpose:                      a new node will be inserted into the list 
+Description:                  a temp node is created and set to equal the 
+front node, then the temp node is inserted into the list behind the front
+node by using the next and pre node members 
+Input:                        this_Node: the node to insert element: the data
+in the node.
+Output:                       return the new Node 
+Result:                       the node has been inserted
+---------------------------------------------------------------------------*/
+static Node * insert_Node (Node * this_Node, void * element, 
+		void * (*copy_func) (void *)) {
+
+	/*create a new working node*/
+	Node * working;
+
+	working = new_Node(element, copy_func);
+
+
+	/*if its the first node*/
+	if(this_Node == NULL){
+		
+		this_Node = working;
+		working->next = working;
+		working->pre = working;
+
+		return working;
+
+	}
+
+	/*logic to insert the new node in the list*/
+	working->pre = this_Node->pre;
+	working->next = this_Node;
+	this_Node->pre = working;
+	working->pre->next = working;		
+
+	return working; 
+}
+
+/*provided function*/
+static Node* new_Node (void * element, void * (*copy_func) (void *)) {
+
+	/* allocate memory */
+	Node *this_Node = (Node *) malloc (sizeof (Node));
+
+	/* initialize memory */
+	this_Node->next = this_Node->pre = NULL;
+	this_Node->data = (copy_func) ? (*copy_func) (element) : element;
+
+	return this_Node;
+}
+
+/*---------------------------------------------------------------------------
+Function Name:                remove_Node 
+Purpose:                      a node will be removed from the list 
+Description:                  a pointer to the data will save the nodes data
+item and then the node will be deleted from the list by using a call to the 
+delete_Node function and the data from the deleted node will be returned 
+Input:                        this_Node: the node to delete 
+Output:                       the data pointer of the delete node 
+Result:                       the node is deleted and data is preserved 
+---------------------------------------------------------------------------*/
+static void * remove_Node (Node * this_Node) {
+
+	/*create a void pointer to hold the parameter node data*/
+	void* data;
+
+	if(this_Node == NULL){
+		fprintf(stderr, REMOVE_NONEXIST);
+		return NULL;
+	}
+	/*set the data pointer to the data in the param node*/
+	data = this_Node->data;
+
+	/*point the previous next node at the next node*/
+	this_Node->pre->next = this_Node->next;
+
+	/*point the next node previous node at the previous node*/
+	this_Node->next->pre = this_Node->pre;
+
+	/*delete the parameter node*/
+	delete_Node(&this_Node, NULL);
+
+	return data;
+}
+
+/*---------------------------------------------------------------------------
+Function Name:                view_Node 
+Purpose:                      the desired nodes item will be displayed to stdout
+Description:                  the nodes data will be returned 
+Input:                        this_Node: the node to view 
+Output:                       the node data
+Result:                       the node data will be viewed 
+---------------------------------------------------------------------------*/
+static void * view_Node (Node * this_Node) {
+
+	if(this_Node == NULL){
+
+		fprintf(stderr, VIEW_NONEXISTNODE);
+		return NULL;
+	}
+
+	/*return the data member of the node*/
+	return this_Node->data;
+
+}
+
+/*provided function*/
+static FILE* write_Node (Node * this_Node, FILE * stream,
+		FILE * (*write_func) (void *, FILE *)) {
+
+	if (!stream) {
+		fprintf (stderr, WRITE_NONEXISTFILE);
+		return NULL;
+	}
+
+	if (!this_Node) {
+		fprintf (stream, WRITE_NONEXISTNODE);
+		return stream;
+	}
+
+	if (!write_func) {
+		fprintf (stream, WRITE_MISSINGFUNC);
+		return stream;
+	}
+
+	return (*write_func) (this_Node->data, stream);
+}
